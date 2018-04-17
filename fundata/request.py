@@ -61,8 +61,6 @@ def generate_sign(nonce, secret_key, api_time, uri, params):
 
     to_sign_str = '|'.join([nonce, secret_key, '{0}'.format(api_time), uri, params_str])
 
-    _logger.info("to sign params: %s", to_sign_str)
-
     # 使用 md5 计算 hash
     hash_gen = hashlib.md5()
     hash_gen.update(to_sign_str)
