@@ -2,9 +2,9 @@
 
 api.varena.com Python SDK
 
-## API 文档地址
-
-> http://open.varena.com/
+## 说明
+- SDK 基于 python2.7
+- 文档地址: http://open.varena.com/
 
 
 ## 使用
