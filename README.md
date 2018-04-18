@@ -40,3 +40,5 @@ api.varena.com Python SDK
         - batch 
             - [x] `/data-service/dota2/public/batch/match/basic_info` -> fundata.dota2.match.batch.get_batch_basic_info
 
+
+
