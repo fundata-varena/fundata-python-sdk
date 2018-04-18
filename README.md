@@ -20,8 +20,9 @@ api.varena.com Python SDK
 
 - 调用某个接口
     ```python
-    from fundata.client import init_api_client
+    from fundata.client import get_api_client
 
+    client = get_api_client()
     uri = '/data-service/dota2/public/match/{0}/basic_info'.format(3765833999)
     data = {}
     res = client.api(uri, data)
