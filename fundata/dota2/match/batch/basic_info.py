@@ -1,10 +1,10 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
-from fundata import request
-from fundata.client import get_api_client
+from ....client import get_api_client
 
 BasicInfoURI = '/data-service/dota2/public/batch/match/basic_info'
+
 
 def get_batch_basic_info(start_time, start_from=0, limit=100):
     """批量获取比赛基本数据, 可以批量获取从一天开始(UTC时间)获取到一天结束的比赛基本数据
@@ -17,7 +17,7 @@ def get_batch_basic_info(start_time, start_from=0, limit=100):
                  如此往复，知道返回的数据条目数小于 limit，然后再从新的一天的 start_time 开始
     `limit` optional, 表示返回数据的最大条目数，传零或者不传默认返回100条数据，不可超过 200，如果返回的条目数小于limit，则意味着当前的查询条件已经没有更多数据了
     """
-    
+
     client = get_api_client()
     data = {
         'start_time': start_time,

@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 import os
+import sys
+from pprint import pprint
+from fundata.request import ApiClient
+from fundata.client import init_api_client
+from fundata.dota2.match import get_batch_basic_info
 
-import os.path, sys
+
 print(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
 sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir))
-
-from pprint import pprint
-from request import ApiClient
-
-from fundata.client import init_api_client
-from dota2.match import get_batch_basic_info
 
 
 def test():
@@ -33,7 +32,7 @@ def test_batch_basic_info():
     # FIXME，需要设置 public_key/secret_key
     init_api_client('', '')
 
-    res = get_batch_basic_info(1522724457, 0, 2)    
+    res = get_batch_basic_info(1522724457, 0, 2)
     pprint(res)
 
 

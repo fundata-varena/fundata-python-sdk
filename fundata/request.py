@@ -4,18 +4,25 @@
 
 import hashlib
 import json
-import httplib
-import urlparse
 import urllib
 import logging
 import time
 import random
 import string
+try:
+    import httplib
+except ImportError:
+    import http.client as httplib
+try:
+    import urlparse
+except ImportError:
+    import urllib.parse as urlparse
 
 DEFAULT_API_SERVER = 'http://api.varena.com'
 
 _logger = logging
 logging.getLogger().setLevel("INFO")
+
 
 class FundataApiException(Exception):
     """ 用于表示异常请求异常
@@ -24,20 +31,27 @@ class FundataApiException(Exception):
         return "varena API request Error"
 
 
-# Refer from: 
+# Refer from:
 # 1. https://pythontips.com/2013/07/28/generating-a-random-string/
 # 2. https://stackoverflow.com/a/2257449
 def _random_str(count):
     """返回指定长度的随机字符串
     """
-    return ''.join([random.choice(string.ascii_letters + string.digits) for n in xrange(count)])
+    return ''.join([random.choice(string.ascii_letters + string.digits) for n in range(count)])
+
+
+def _urlencode(param):
+    try:
+        return urllib.urlencode(param)
+    except AttributeError:
+        return urllib.parse.urlencode(param)
 
 
 def val_to_str(val):
     """ 把参数的值转换成字符串
     """
     if type(val) == bool:
-        return 'true' if val == True else 'false'
+        return 'true' if val is True else 'false'
 
     if type(val) != list:
         return str(val)
@@ -51,19 +65,18 @@ def val_to_str(val):
 def generate_sign(nonce, secret_key, api_time, uri, params):
     """根据待签名的参数和 secret_key 来生成签名
     """
-    items = params.items()
     # 参数排序
-    items.sort()
+    items = sorted(params.items())
 
     # 组装待签名的参数
-    str_arr = [ '{0}={1}'.format(str(key), val_to_str(val)) for key, val in items]
+    str_arr = ['{0}={1}'.format(str(key), val_to_str(val)) for key, val in items]
     params_str = '&'.join(str_arr)
 
     to_sign_str = '|'.join([nonce, secret_key, '{0}'.format(api_time), uri, params_str])
 
     # 使用 md5 计算 hash
     hash_gen = hashlib.md5()
-    hash_gen.update(to_sign_str)
+    hash_gen.update(to_sign_str.encode('utf-8'))
     hash_value = hash_gen.hexdigest()
 
     return hash_value
@@ -85,16 +98,16 @@ class InternalRequest(object):
         headers['Content-Type'] = 'application/json; charset=utf-8'
 
         tmp_params = {}
-        for key, val in params.iteritems():
+        for key, val in params.items():
             tmp_params[key] = val_to_str(val)
 
-        query = '{0}?{1}'.format(uri, urllib.urlencode(tmp_params))
+        query = '{0}?{1}'.format(uri, _urlencode(tmp_params))
 
         _logger.debug('Get %s with api-nonce %s', query, headers.get('Accept-ApiNonce'))
 
         try:
             self._conn.request('GET', query, None, headers)
-        except Exception as e:
+        except Exception:
             _logger.exception('GET request error %s', uri)
             return False
 
@@ -108,7 +121,7 @@ class InternalRequest(object):
 
         try:
             self._conn.request('POST', uri, body, headers)
-        except Exception as e:
+        except Exception:
             _logger.exception('POST request error %s', uri)
             return False
 
@@ -116,24 +129,23 @@ class InternalRequest(object):
 
     def _get_response(self):
         try:
-            response = self._conn.getresponse().read()
-        except httplib.HTTPException as err:
+            response = self._conn.getresponse().read().decode('utf-8')
+        except httplib.HTTPException:
             _logger.exception('Get response failed for http error')
             return False
-        except Exception as err:
+        except Exception:
             _logger.exception('Get response failed for Unknown error')
             return False
 
         resObj = False
         try:
-           resObj = json.loads(response)
+            resObj = json.loads(response)
         except Exception as e:
             _logger.exception('Parse json failed with response %s', response)
             return {
                 'retcode': -1,
                 'message': 'Parse json failed: ' + str(e)
             }
-
         return resObj
 
 
@@ -155,7 +167,7 @@ class ApiClient(object):
     def api(self, uri, data, options=None, method='GET'):
         params = dict({}, **data)
 
-        nonce = _random_str(10) # 默认长度为10
+        nonce = _random_str(10)  # 默认长度为10
         if options and options.get('nonce', False):
             nonce = options['nonce']
         api_time = int(time.time())
