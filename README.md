@@ -3,7 +3,9 @@
 api.varena.com Python SDK
 
 ## 说明
-- SDK 基于 python2.7
+- SDK 支持的 Python 版本:
+    - python2.7
+    - python3 (由[codeway3](https://github.com/codeway3)提供支持)
 - 文档地址: http://open.varena.com/
 
 
