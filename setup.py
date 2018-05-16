@@ -12,9 +12,10 @@ setup(
     description='A fundata sdk package for api.varena.com, \
             for API docs, see http://open.varena.com/',
     license='MIT',
-    packages=['fundata-varena'],
+    packages=['fundata'],
     author='VArena Shanghai Team',
     author_email='fundata@varena.com',
     keywords=['fundata', 'varena'],
+    install_requires=[],
     url='https://github.com/fundata-varena/fundata-python-sdk'
 )
