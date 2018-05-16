@@ -4,7 +4,7 @@
 
 """
 """
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name='fundata-varena',
@@ -12,7 +12,8 @@ setup(
     description='A fundata sdk package for api.varena.com, \
             for API docs, see http://open.varena.com/',
     license='MIT',
-    packages=['fundata'],
+    packages=find_packages(),
+    package_dir = {},
     author='VArena Shanghai Team',
     author_email='fundata@varena.com',
     keywords=['fundata', 'varena'],
