@@ -107,9 +107,9 @@ class InternalRequest(object):
 
         try:
             self._conn.request('GET', query, None, headers)
-        except Exception:
+        except Exception as e:
             _logger.exception('GET request error %s', uri)
-            return False
+            raise Exception(e)
 
         return self._get_response()
 
@@ -121,31 +121,27 @@ class InternalRequest(object):
 
         try:
             self._conn.request('POST', uri, body, headers)
-        except Exception:
+        except Exception as e:
             _logger.exception('POST request error %s', uri)
-            return False
+            raise Exception(e)
 
         return self._get_response()
 
     def _get_response(self):
         try:
             response = self._conn.getresponse().read().decode('utf-8')
-        except httplib.HTTPException:
+        except httplib.HTTPException as e:
             _logger.exception('Get response failed for http error')
-            return False
-        except Exception:
+            raise Exception(e)
+        except Exception as e :
             _logger.exception('Get response failed for Unknown error')
-            return False
+            raise Exception(e)
 
-        resObj = False
         try:
             resObj = json.loads(response)
         except Exception as e:
             _logger.exception('Parse json failed with response %s', response)
-            return {
-                'retcode': -1,
-                'message': 'Parse json failed: ' + str(e)
-            }
+            raise Exception(e)
         return resObj
 
 
