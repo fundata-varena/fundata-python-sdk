@@ -161,14 +161,18 @@ class ApiClient(object):
         cls.api_server = api_server if api_server else DEFAULT_API_SERVER
 
     def api(self, uri, data, options=None, method='GET'):
+        parse_result = urlparse.urlparse(uri)
+        _uri_path = parse_result.path
         params = dict({}, **data)
+        if parse_result.query:
+            params.update(urlparse.parse_qs(parse_result.query))
 
         nonce = _random_str(10)  # 默认长度为10
         if options and options.get('nonce', False):
             nonce = options['nonce']
         api_time = int(time.time())
 
-        sign = generate_sign(nonce, self._secret_key, api_time, uri, params)
+        sign = generate_sign(nonce, self._secret_key, api_time, _uri_path, params)
 
         headers = {
             'Accept-ApiKey': self._public_key,
@@ -177,11 +181,11 @@ class ApiClient(object):
             'Accept-ApiSign': sign,
         }
 
-        _logger.info("Request uri: %s, params: %s, headers: %s", uri, params, headers)
+        _logger.info("Request uri: %s, params: %s, headers: %s", _uri_path, params, headers)
 
         if method == 'POST':
-            return self._request.post(uri, params, headers)
+            return self._request.post(_uri_path, params, headers)
         elif method == 'GET':
-            return self._request.get(uri, params, headers)
+            return self._request.get(_uri_path, params, headers)
         else:
             raise FundataApiException('Only POST or GET is supported')
