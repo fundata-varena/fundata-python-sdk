@@ -19,8 +19,8 @@ def test():
     client = ApiClient(public_key, secret_key)
 
     # 准备 API 需要的参数
-    uri = '/data-service/dota2/public/match/{0}/basic_info'.format(3765833999)
-    data = {}
+    uri = '/fundata-dota2-free/v2/match/basic-info'
+    data = {"match_id": 3765833999}
 
     res = client.api(uri, data)
 
