@@ -3,7 +3,7 @@
 # vim:fenc=utf-8
 from ....client import get_api_client
 
-BasicInfoURI = '/data-service/dota2/public/batch/match/basic_info'
+BasicInfoURI = '/fundata-dota2-free/v2/match/basic-info/batch'
 
 
 def get_batch_basic_info(start_time, start_from=0, limit=100):
