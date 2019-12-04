@@ -9,14 +9,8 @@ import logging
 import time
 import random
 import string
-try:
-    import httplib
-except ImportError:
-    import http.client as httplib
-try:
-    import urlparse
-except ImportError:
-    import urllib.parse as urlparse
+import urlparse
+import requests
 
 DEFAULT_API_SERVER = 'http://api.varena.com'
 
@@ -85,14 +79,6 @@ def generate_sign(nonce, secret_key, api_time, uri, params):
 class InternalRequest(object):
     def __init__(self, base_url, timeout):
         self._base_url = base_url
-        obj = urlparse.urlsplit(self._base_url)
-        if obj.scheme == 'https':
-            self._conn = httplib.HTTPSConnection(obj.netloc, timeout=timeout)
-        else:
-            self._conn = httplib.HTTPConnection(obj.netloc, timeout=timeout)
-
-    def __del__(self):
-        self._conn.close()
 
     def get(self, uri, params, headers):
         headers['Content-Type'] = 'application/json; charset=utf-8'
@@ -102,47 +88,32 @@ class InternalRequest(object):
             tmp_params[key] = val_to_str(val)
 
         query = '{0}?{1}'.format(uri, _urlencode(tmp_params))
+        url = '{0}{1}'.format(self._base_url, query)
 
-        _logger.debug('Get %s with api-nonce %s', query, headers.get('Accept-ApiNonce'))
+        _logger.debug('Get %s with api-nonce %s', url, headers.get('Accept-ApiNonce'))
 
         try:
-            self._conn.request('GET', query, None, headers)
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            return response.json()
         except Exception as e:
             _logger.exception('GET request error %s', uri)
             raise Exception(e)
-
-        return self._get_response()
 
     def post(self, uri, params, headers):
         body = json.dumps(params)
         headers['Content-Type'] = 'application/json; charset=utf-8'
 
+        url = '{0}{1}'.format(self._base_url, uri)
         _logger.debug('Post %s %s with api-nonce %s', uri, body, headers.get('Accept-ApiNonce'))
 
         try:
-            self._conn.request('POST', uri, body, headers)
+            response = requests.post(url, json=params, headers=headers)
+            response.raise_for_status()
+            return response.json()
         except Exception as e:
-            _logger.exception('POST request error %s', uri)
+            _logger.exception('POST request error %s', url)
             raise Exception(e)
-
-        return self._get_response()
-
-    def _get_response(self):
-        try:
-            response = self._conn.getresponse().read().decode('utf-8')
-        except httplib.HTTPException as e:
-            _logger.exception('Get response failed for http error')
-            raise Exception(e)
-        except Exception as e :
-            _logger.exception('Get response failed for Unknown error')
-            raise Exception(e)
-
-        try:
-            resObj = json.loads(response)
-        except Exception as e:
-            _logger.exception('Parse json failed with response %s', response)
-            raise Exception(e)
-        return resObj
 
 
 class ApiClient(object):
